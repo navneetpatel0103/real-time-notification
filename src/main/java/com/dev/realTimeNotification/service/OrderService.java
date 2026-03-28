@@ -3,12 +3,15 @@ package com.dev.realTimeNotification.service;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.dev.realTimeNotification.dto.OrderRequestDto;
 import com.dev.realTimeNotification.dto.OrderResponseDto;
 import com.dev.realTimeNotification.dto.OrderStatusEvent;
 import com.dev.realTimeNotification.dto.OrderStatusUpdateRequestDto;
+import com.dev.realTimeNotification.exception.OrderNotFoundException;
 import com.dev.realTimeNotification.model.Order;
 
 @Service
@@ -34,6 +37,7 @@ public class OrderService {
 		return mapToResponseDto(order);
 	}
 	
+	@CacheEvict(value = "orders", key = "#orderId")
 	public OrderResponseDto updateOrderStatus(String orderId, OrderStatusUpdateRequestDto statusUpdateRequestDto) {
 	    Order order = orderStore.get(orderId);
 	    if (order == null) {
@@ -44,6 +48,15 @@ public class OrderService {
         orderStatusProducerService.sendStatusUpdate(orderStatusEvent);
         return mapToResponseDto(order);
 	}
+	
+	@Cacheable(value = "orders", key = "#orderId")
+	public OrderResponseDto getOrderById(String orderId) {
+        Order order = orderStore.get(orderId);
+        if (order == null) {
+            throw new OrderNotFoundException(orderId);
+        }
+        return mapToResponseDto(order);
+    }
 	
 	private OrderResponseDto mapToResponseDto(Order order) {
         OrderResponseDto dto = new OrderResponseDto();

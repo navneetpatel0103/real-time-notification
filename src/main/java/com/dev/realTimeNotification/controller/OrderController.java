@@ -1,6 +1,7 @@
 package com.dev.realTimeNotification.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,5 +35,10 @@ public class OrderController {
 		// Logic to update the order status and return the response
 		return ResponseEntity.ok(orderService.updateOrderStatus(orderId, status));
 	}
+	
+	@GetMapping("/{orderId}")
+    public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable String orderId) {
+        return ResponseEntity.ok(orderService.getOrderById(orderId));
+    }
 	
 }
